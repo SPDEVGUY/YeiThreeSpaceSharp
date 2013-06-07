@@ -26,3 +26,5 @@ Current functionality:
 - Get Current Quaternion 
 - Get LED Colour
 - Set LED Colour
+
+-- My name was set wrong in my config (fixed it).  I'm actually Kevin Cole!  Hello from Edmonton, Alberta, Canada!
