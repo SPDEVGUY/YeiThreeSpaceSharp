@@ -2,16 +2,17 @@ YeiThreeSpaceSharp
 ==================
 
 C# Implementation of the YEI ThreeSpace API.
-
-C/C++ Source: http://www.yeitechnology.com/3-space-sensor-application-programming-interface
+(A sensor that provides you with awesome Gyro, Accelerometer, Compass and rotation angles.)
 
 Current implementation is based off the 2.0.5.2 C API
 http://forum.yeitechnology.com/viewtopic.php?f=12&t=27
 
-^-- Download the firmware from there, and ensure your device is updated
+^-- Download the firmware from there, and ensure your device is updated.
+You may also find the C++ source code for the API At that link.
 
 This code has been tested and confirmed working with the USB/RS232 sensor model.
 (My specific model is the screw down case USB v2)
+
 http://www.yeitechnology.com/3-space-product-family-category/usb
 
 Happy hacking!
