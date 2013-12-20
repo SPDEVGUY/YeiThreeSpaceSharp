@@ -44,6 +44,13 @@ namespace YEISensorLib.Sharped
         /// </summary>
         public string FriendlyPortName { get { return _port.FriendlyName; } }
 
+        public Vector3F Gyro;
+        public Vector3F Accelerometer;
+        public Vector3F Compass;
+        public Euler Euler;
+        public Quaternion Quaternion;
+        public uint TimeStamp;
+
         /// <summary>
         /// Create a sensor using the provided ComPort.
         /// </summary>
@@ -51,12 +58,12 @@ namespace YEISensorLib.Sharped
         public SensorDevice(ComPort port)
         {
             _port = port;
-            _deviceId = ThreeSpaceInterop.CreateDevice(port.PortName, port.SensorType);
+            _deviceId = ThreeSpaceInterop.CreateDevice(port.PortName, TimeStampModeEnum.Sensor);
             IsConnected = _deviceId != Defines.NO_DEVICE_ID;
             if (IsConnected)
             {
                 LoadSerialNumber();
-                IsDongle = port.SensorType == SensorTypeEnum.DNG;
+                IsDongle = port.SensorType == SensorTypeEnum.WirelessDongle;
             }
         }
 
@@ -64,66 +71,62 @@ namespace YEISensorLib.Sharped
         /// Returns the filtered tared quaternion direct from the sensor.
         /// </summary>
         /// <returns></returns>
-        public Quaternion GetQuaternion()
+        public bool GetQuaternion()
         {
-            if (!IsConnected || IsDongle) return new Quaternion();
-            Quaternion result;
-            ThreeSpaceInterop.GetFilteredTaredOrientedQuaterion(_deviceId, out result);
+            if (!IsConnected || IsDongle) return false;
+            var result = ThreeSpaceInterop.GetTaredOrientationAsQuaternion(_deviceId, out Quaternion, out TimeStamp);
 
-            return result;
+            return result == ResultEnum.NoError;
         }
 
         /// <summary>
         /// Returns the filtered tared euler angles from the sensor.
         /// </summary>
         /// <returns></returns>
-        public Euler GetEulerAngles()
+        public bool GetEulerAngles()
         {
-            if (!IsConnected || IsDongle) return new Euler();
-            Euler result;
-            ThreeSpaceInterop.GetFilteredTaredOrientedEuler(_deviceId, out result);
+            if (!IsConnected || IsDongle) return false;
+            var result = ThreeSpaceInterop.GetTaredOrientationAsEulerAngles(_deviceId, out Euler, out TimeStamp);
 
-            return result;
+            return result == ResultEnum.NoError;
         }
 
         /// <summary>
         /// Returns the filtered tared quaternion direct from the sensor.
         /// </summary>
         /// <returns></returns>
-        public SensorData GetNormalizedSensorData()
+        public bool GetNormalizedSensorData()
         {
-            if (!IsConnected || IsDongle) return new SensorData();
-            SensorData result = new SensorData();
-            ThreeSpaceInterop.GetNormalizedSensorData(_deviceId, ref result);
+            if (!IsConnected || IsDongle) return false;
+            var result = ThreeSpaceInterop.GetAllNormalizedComponentSensorData(_deviceId, out Gyro, out Accelerometer, out Compass, out TimeStamp);
 
-            return result;
+            return result == ResultEnum.NoError;
         }
 
         /// <summary>
-        /// Returns a confidence level, 0 being not trustworthy, and 1 being fully trustworthy.
-        /// This is the result of movement and being near a magnetic field.
+        /// Tare the device to the current orientation
         /// </summary>
-        /// <returns></returns>
-        public double GetConfidence()
+        public void Tare()
         {
-            if (!IsConnected || IsDongle) return 0;
-            float result ;
-            ThreeSpaceInterop.GetConfidence(_deviceId, out result);
-
-            return result;
+            uint timestamp;
+            ThreeSpaceInterop.TareWithCurrentOrientation(_deviceId, out timestamp);
         }
+
+       
 
         public void SetLedColour(Color color)
         {
-            var resultCode = ThreeSpaceInterop.SetLedColor(_deviceId, color);
+            var resultCode = ThreeSpaceInterop.SetLedColor(_deviceId, new [] {color.R,color.G,color.B}, 0);
         }
         public Color GetLedColour()
         {
+            uint ignored;
+
             Color result =new Color();
             result.R = 0;
             result.G = 0;
             result.B = 0;
-            var resultCode = ThreeSpaceInterop.GetLedColor(_deviceId, out result);
+            var resultCode = ThreeSpaceInterop.GetLedColor(_deviceId, out result, out ignored);
 
             return result;
         }
@@ -131,8 +134,9 @@ namespace YEISensorLib.Sharped
         private void LoadSerialNumber()
         {
             var buffer = new byte[9];
-            ThreeSpaceInterop.GetSerialNumber(_deviceId, buffer);
-            SerialNumber = Encoding.ASCII.GetString(buffer);
+            uint timeStamp;
+            ThreeSpaceInterop.GetSerialNumber(_deviceId, buffer, out timeStamp);
+            SerialNumber = BitConverter.ToString(buffer);
         }
 
 

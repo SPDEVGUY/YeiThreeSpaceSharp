@@ -11,7 +11,8 @@ namespace YEISensorLib.RawApi
     * \brief An enum expressing the different types of errors a 3-Space API call can return.
     * 
     */
-    public enum ResultEnum
+    
+    public enum ResultEnum //AKA TSS_Error
     {
         /**
         * \brief The API call successfuly executed.

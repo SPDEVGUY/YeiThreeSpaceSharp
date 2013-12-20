@@ -41,28 +41,42 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="RawApi\AxisDirections.cs" />
-    <Compile Include="RawApi\AxisOrder.cs" />
-    <Compile Include="RawApi\BootloaderData.cs" />
-    <Compile Include="RawApi\ButtonState.cs" />
-    <Compile Include="RawApi\ComInfo.cs" />
-    <Compile Include="RawApi\ComPort.cs" />
-    <Compile Include="RawApi\IntPtrExtensions.cs" />
-    <Compile Include="RawApi\ThreeSpaceInterop.cs" />
-    <Compile Include="RawApi\Defines.cs" />
-    <Compile Include="RawApi\SensorData.cs" />
-    <Compile Include="RawApi\AxisAngle.cs" />
-    <Compile Include="RawApi\Clock.cs" />
-    <Compile Include="RawApi\Color.cs" />
-    <Compile Include="RawApi\ResultEnum.cs" />
-    <Compile Include="RawApi\Euler.cs" />
-    <Compile Include="RawApi\FilterEnum.cs" />
-    <Compile Include="RawApi\Matrix.cs" />
-    <Compile Include="RawApi\Quarternion.cs" />
-    <Compile Include="RawApi\SensorTypeEnum.cs" />
-    <Compile Include="RawApi\TssVector.cs" />
-    <Compile Include="RawApi\ThreeSpaceInteropDoNotUse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RawApi\ButtonState.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\Color.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\ComPort.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\Vector3F.cs" />
+    <Compile Include="RawApi\TimeStampMode.cs" />
+    <Compile Include="RawApi\Defines.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\Euler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\FilterEnum.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\IntPtrExtensions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\Quarternion.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\ResultEnum.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\SensorTypeEnum.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="RawApi\ThreeSpaceInterop.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Sharped\SensorDevice.cs" />
     <Compile Include="Sharped\SensorDevices.cs" />
   </ItemGroup>

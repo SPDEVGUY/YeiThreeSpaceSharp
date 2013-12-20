@@ -10,16 +10,16 @@ namespace YEISensorLib.RawApi
     * \brief An enum expressing the different types of 3-Space Sensors.
     * 
     */
-    public enum SensorTypeEnum
+    public enum SensorTypeEnum //AKA TSS_Type
     {
-        BTL,
+        Unknown,
+        Bootloader,
         Usb,
-        DNG,
-        WirelessWired,		//wireless wired (connected to PC)
+        WirelessDongle,
         Wireless,	//wireless wireless
-        EM,
-        DL,
-        BT,
-        Unknown
+        WirelessWired,		//wireless wired (connected to PC)
+        Embedded,
+        DataLogger,
+        BlueTooth
     }
 }

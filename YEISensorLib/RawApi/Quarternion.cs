@@ -32,5 +32,6 @@ namespace YEISensorLib.RawApi
         * \brief The z component of the quaternion.
         */
         public float W;
+
     }
 }

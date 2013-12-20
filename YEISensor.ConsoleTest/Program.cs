@@ -12,8 +12,10 @@ namespace YEISensor.ConsoleTest
     {
         static void Main(string[] args)
         {
-            using (var device = SensorDevices.GetFirstAvailable(FilterEnum.FindUSB))
+            using (var device = SensorDevices.GetFirstAvailable())
             {
+                device.Tare();
+
                 Console.WriteLine("Port:            {0}", device.PortName);
                 Console.WriteLine("Friendly Name:   {0}", device.FriendlyPortName);
                 Console.WriteLine("Sensor Type:     {0}", device.SensorType);
@@ -23,24 +25,24 @@ namespace YEISensor.ConsoleTest
                 var line = string.Empty;
                 while (line == string.Empty)
                 {
-                    var quat = device.GetQuaternion();
-                    Console.WriteLine("Quaternion:  {0:0.000},{1:0.000},{2:0.000},{3:0.000}", quat.W, quat.X, quat.Y, quat.Z);
+                    var quatSuccess = device.GetQuaternion();
+                    Console.WriteLine("Quaternion:  {0:0.000},{1:0.000},{2:0.000},{3:0.000}", device.Quaternion.W, device.Quaternion.X, device.Quaternion.Y, device.Quaternion.Z);
 
-                    var euler = device.GetEulerAngles();
-                    Console.WriteLine("Euler:       {0:0.000},{1:0.000},{2:0.000}", euler.X, euler.Y, euler.Z);
+                    var eulerSuccess = device.GetEulerAngles();
+                    Console.WriteLine("Euler:       {0:0.000},{1:0.000},{2:0.000}", device.Euler.X, device.Euler.Y, device.Euler.Z);
 
-                    var sensorData = device.GetNormalizedSensorData();
-                    Console.WriteLine("Sensor data...");
-                    Console.WriteLine("Gyro:        {0:0.000},{1:0.000},{2:0.000}", sensorData.GyroX, sensorData.GyroY, sensorData.GyroZ);
-                    Console.WriteLine("Accel:       {0:0.000},{1:0.000},{2:0.000}", sensorData.AccelerometerX, sensorData.AccelerometerY, sensorData.AccelerometerZ);
-                    Console.WriteLine("Compass:     {0:0.000},{1:0.000},{2:0.000}", sensorData.CompassX, sensorData.CompassY, sensorData.CompassZ);
+                    var sensorSuccess = device.GetNormalizedSensorData();
+                    Console.WriteLine("Sensor data... {0} / {1}", sensorSuccess, device.TimeStamp);
+                    Console.WriteLine("Gyro:        {0:0.000},{1:0.000},{2:0.000}", device.Gyro.X, device.Gyro.Y, device.Gyro.Z);
+                    Console.WriteLine("Accel:       {0:0.000},{1:0.000},{2:0.000}", device.Accelerometer.X, device.Accelerometer.Y, device.Accelerometer.Z);
+                    Console.WriteLine("Compass:     {0:0.000},{1:0.000},{2:0.000}", device.Compass.X, device.Compass.Y, device.Compass.Z);
 
 
                     var color = new Color
                                     {
-                                        R = (sensorData.AccelerometerX +1) /2,
-                                        G = (sensorData.AccelerometerY + 1) / 2,
-                                        B = (sensorData.AccelerometerZ + 1) / 2,
+                                        R = (device.Accelerometer.X + 1) / 2,
+                                        G = (device.Accelerometer.Y + 1) / 2,
+                                        B = (device.Accelerometer.Z + 1) / 2,
                                     };
                     device.SetLedColour(color);
                     color = device.GetLedColour();

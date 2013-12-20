@@ -16,30 +16,40 @@ namespace YEISensorLib.RawApi
     /// </summary>
     public class ThreeSpaceInterop
     {
+
+
         /// <summary>
-        /// Scans the host computer for the first serial port it finds with a sensor (virtual or physical).
-        /// Port is returned by tss_port. Calling getAvailableComPorts or getFirstAvailableTSSComPort will reset the iteration through the sensors.
+        /// Check if the provided device id is connected, if specified by reconnect then attempts to reconnect
         /// </summary>
-        /// <param name="port">A pointer to the first serial port with a 3-Space device that matches the filter.</param>
-        /// <param name="filter">A mask of what 3-Space device types were desired. (FilterEnum)</param>
-        /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "getFirstAvailableTSSComPort")]
-        public static extern ResultEnum GetFirstAvailableComPort(
-            out ComPort port,
-            int filter
-        );
+        /// <param name="deviceId"></param>
+        /// <param name="reconnect"></param>
+        /// <returns>true if connected</returns>
+        public static bool IsConnected(uint deviceId, bool reconnect)
+        {
+            return IsConnectedRaw(deviceId, reconnect ? 1 : 0) == 1;
+        }
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_isConnected")]
+        protected static extern /* TSS_ID */ int IsConnectedRaw(
+            uint deviceId,
+            int reconnect //0 = false, 1 = true
+            );
+
+
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi,
+            EntryPoint = "tss_resetThreeSpaceAPI")]
+        protected static extern /* TSS_ID */ int ResetThreeSpaceApi();
 
         /// <summary>
         /// Creates a three space sensor using the ComPort.PortName and sensor type.
         /// NOTE: unless the result is Defines.NO_DEVICE_ID you must dispose using CloseDevice
         /// </summary>
-        /// <param name="PortName"></param>
-        /// <param name="type"></param>
+        /// <param name="portName"></param>
+        /// <param name="timeStampMode"></param>
         /// <returns></returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "createTSDeviceStr")]
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_createTSDeviceStr")]
         public static extern /* TSS_ID */ uint CreateDevice(
-            string PortName,
-            SensorTypeEnum type
+            string portName,
+            TimeStampModeEnum timeStampMode
             );
 
 
@@ -49,7 +59,7 @@ namespace YEISensorLib.RawApi
         /// </summary>
         /// <param name="deviceId">The identifier for the device to disconnect.</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "closeTSDevice")]
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_closeTSDevice")]
         public static extern ResultEnum CloseDevice(
             uint deviceId
             );
@@ -61,10 +71,11 @@ namespace YEISensorLib.RawApi
         /// <param name="deviceId">The identifier for the 3-Space device.</param>
         /// <param name="serial">The char buffer to write the string into. Should have a length of 9 (8 for the hex string, 1 for a null terminator).</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "getSerialNumberHex")]
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_getSerialNumber")]
         public static extern ResultEnum GetSerialNumber(
             uint deviceId,
-            byte[] serial
+            byte[] serialNumber,
+            out uint timestamp
             );
 
 
@@ -72,40 +83,30 @@ namespace YEISensorLib.RawApi
         ///  Scans the host computer for all serial ports (virtual or physical).
         ///  Ports returned are sorted into two lists based on whether the driver creating the port was a 3-Space driver.
         /// </summary>
-        /// <param name="sensorPortList">A pointer to an array filled with serial ports created by 3-Space drivers. These ports have 3-Space hardware connected to them. This pointer will have the address of the array written to it, if not NULL.</param>
-        /// <param name="unknownPortList">A pointer to an array filled with serial ports not directly created by a 3-Space driver. These ports may have 3-Space hardware connected through RS-232 port. This pointer will have the address of the array written to it, if not NULL.</param>
-        /// <param name="sensorPortListSize">A pointer to the number of listings written to the array pointed to by tss_port_list. This pointer is written to, if not NULL.</param>
-        /// <param name="unknownPortListSize">A pointer to the number of listings written to the array pointed to by ukn_port_list. This pointer is written to, if not NULL.</param>
+        /// <param name="portInfo">A comport struct to fill</param>
+        /// <param name="listSize">Number of structs to fill (specify 1)</param>
+        /// <param name="portIndex">index of comport (Zero based)</param>
         /// <param name="filter">A mask of what 3-Space device types were desired. Ports appended to tss_port_list will only have devices connected that match the mask. (FilterEnum)</param>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "getAvailableComPorts")]
-        public static extern void GetAvailableComPortsRaw(
-            ref IntPtr sensorPortList,
-            ref IntPtr unknownPortList,
-            ref uint sensorPortListSize,
-            ref uint unknownPortListSize,
-            int filter
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_getComPorts")]
+        protected static extern int GetAvailableComPortRaw(
+            ref ComPort portInfo,
+            uint listSize,
+            uint portIndex,
+            uint filter
             );
-
+        
         /// <summary>
-        /// Scans the host computer for all comports that may be hosting threespace devices.
+        /// Returns the the 3 space sensor at comport or null
         /// </summary>
-        /// <param name="sensorPorts">sensor com ports with threespace devices</param>
-        /// <param name="unknownPorts">unknown com ports</param>
-        public static List<ComPort> GetAvailableComPorts()
-        {//Warning: I'm not sure if this is supposed to dispose of the results or not =/
-            IntPtr sensorPortPointer = new IntPtr();
-            var result = new List<ComPort>();
-            IntPtr unknownPortPointer = new IntPtr();
-            uint sensorPortSize = 0;
-            uint unknownPortSize = 0;
-
-
-            GetAvailableComPortsRaw(
-                ref sensorPortPointer, ref unknownPortPointer, ref sensorPortSize, ref unknownPortSize,
-                (int)FilterEnum.FindALL);
-
-            return sensorPortPointer.ToListFromArray<ComPort>(sensorPortSize);
+        /// <returns></returns>
+        public static ComPort? GetComPort(uint index)
+        {
+            var result = new ComPort();
+            var nFound = GetAvailableComPortRaw(ref result, 1, index, (uint)FilterEnum.AnyKnown);
+            if (nFound == 0) return null;
+            return result;
         }
+
 
 
         /// <summary>
@@ -115,10 +116,23 @@ namespace YEISensorLib.RawApi
         /// <param name="deviceId">The identifier for the 3-Space device.</param>
         /// <param name="quaternion">The orientation will be written to this structure.</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "getFiltTaredOrientQuat")]
-        public static extern ResultEnum GetFilteredTaredOrientedQuaterion(
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_getTaredOrientationAsQuaternion")]
+        public static extern ResultEnum GetTaredOrientationAsQuaternion(
             uint deviceId,
-            out Quaternion quaternion
+            out Quaternion quaternion,
+            out uint timeStamp
+            );
+
+        /// <summary>
+        /// Tare the device with it's current orientation
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <param name="timeStamp"></param>
+        /// <returns></returns>
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_tareWithCurrentOrientation")]
+        public static extern ResultEnum TareWithCurrentOrientation(
+            uint deviceId,
+            out uint timeStamp
             );
 
 
@@ -129,10 +143,11 @@ namespace YEISensorLib.RawApi
         /// <param name="deviceId">The identifier for the 3-Space device.</param>
         /// <param name="euler">The orientation will be written to this structure.</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "getFiltTaredOrientEuler")]
-        public static extern ResultEnum GetFilteredTaredOrientedEuler(
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_getTaredOrientationAsEulerAngles")]
+        public static extern ResultEnum GetTaredOrientationAsEulerAngles(
             uint deviceId,
-            out Euler euler
+            out Euler euler,
+            out uint timeStamp
             );
 
 
@@ -143,10 +158,13 @@ namespace YEISensorLib.RawApi
         /// <param name="id">The identifier for the 3-Space device.</param>
         /// <param name="data">The normalized data from the 3-Space Sensor's accelerometer, gyroscope, and compass are filled into the referenced structure.</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "getAllSensorsNormalized")]
-        public static extern ResultEnum GetNormalizedSensorData(
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_getAllNormalizedComponentSensorData")]
+        public static extern ResultEnum GetAllNormalizedComponentSensorData(
             uint id,
-            ref SensorData data
+            out Vector3F gyro,
+            out Vector3F accelerometer,
+            out Vector3F compass,
+            out uint timeStamp
             );
 
 
@@ -156,10 +174,11 @@ namespace YEISensorLib.RawApi
         /// <param name="deviceId">The identifier for the 3-Space device.</param>
         /// <param name="color">The color the device's LED is being set to.</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "setLEDColor")]
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi, EntryPoint = "tss_setLEDColor")]
         public static extern ResultEnum SetLedColor( 
-            uint deviceId, 
-            Color color
+            uint deviceId,
+            float[] color,
+            uint timeStampZero
             );
 
 
@@ -169,10 +188,18 @@ namespace YEISensorLib.RawApi
         /// <param name="deviceId">The identifier for the 3-Space device.</param>
         /// <param name="color">The color of the device's LED is written to the referenced variable.</param>
         /// <returns>An error code indicating either success or failure to execute the call. The code will also indicate the reason for the failure.</returns>
-        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "getLEDColor")]
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tss_getLEDColor")]
         public static extern ResultEnum GetLedColor(
             uint deviceId, 
-            out Color color
+            out Color color,
+            out uint timeStamp
+            );
+
+
+        [DllImport("ThreeSpace_API.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "tss_getButtonState")]
+        public static extern ResultEnum GetButtonState(
+            uint deviceId, 
+            out ButtonState state
             );
     }
 

@@ -26,5 +26,10 @@ namespace YEISensorLib.RawApi
         */
         /* boolean/byte */
         public byte RightPressed;
+
+        /// <summary>
+        /// Timestamp of the data
+        /// </summary>
+        public uint TimeStamp;
     }
 }

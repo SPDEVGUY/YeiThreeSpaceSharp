@@ -12,17 +12,17 @@ namespace YEISensorLib.RawApi
     *
     */
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public struct ComPort
+    public struct ComPort //AKA TSS_ComPort
     {
         /**
         * \brief The system name for the serial port.
         */
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
         public string PortName;
         /**
         * \brief The human-friendly name for the serial port.
         */
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 64)]
         public string FriendlyName;
         /**
         * \brief The type of 3-Space device connected through the serial port.

@@ -13,11 +13,10 @@ namespace YEISensorLib.Sharped
         /// Returns the first available sensor device
         /// </summary>
         /// <returns></returns>
-        public static SensorDevice GetFirstAvailable(FilterEnum filter)
+        public static SensorDevice GetFirstAvailable()
         {
-            ComPort port;
-            ThreeSpaceInterop.GetFirstAvailableComPort(out port, (int)filter);
-            if(!string.IsNullOrEmpty(port.PortName)) return new SensorDevice(port);
+            var port = ThreeSpaceInterop.GetComPort(0);
+            if(port != null) return new SensorDevice((ComPort)port);
             return null;
         }
 
@@ -26,9 +25,17 @@ namespace YEISensorLib.Sharped
         /// Ensure that you dispose of them.
         /// </summary>
         /// <returns>List of all connected threespace devices</returns>
-        public static List<SensorDevice> GetDevices()
+        public static List<SensorDevice> GetDevices() //NOTE: I don't think this code works.  I think I botched handling their vector thing.
         {
-            var ports = ThreeSpaceInterop.GetAvailableComPorts();
+            var ports = new List<ComPort>();
+            var thisPort = ThreeSpaceInterop.GetComPort(0);
+            uint index = 0;
+            while (thisPort != null)
+            {
+                ports.Add((ComPort)thisPort);
+                index++;
+                thisPort = ThreeSpaceInterop.GetComPort(index);
+            }
             var result = new List<SensorDevice>();
             foreach(var port in ports) result.Add(new SensorDevice(port));
             return result;
